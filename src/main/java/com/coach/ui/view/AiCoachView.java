@@ -39,15 +39,16 @@ public class AiCoachView {
         
         ScrollPane chatScroll = new ScrollPane(chatContainer);
         chatScroll.setFitToWidth(true);
-        chatScroll.setStyle("-fx-background-color: transparent;");
+        chatScroll.getStyleClass().add("glass-panel");
+        chatScroll.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 10;");
         VBox.setVgrow(chatScroll, Priority.ALWAYS);
 
         TextField inputField = new TextField();
         inputField.setPromptText("E.g., How can I stop procrastinating on my math homework?");
         HBox.setHgrow(inputField, Priority.ALWAYS);
 
-        Button sendBtn = new Button("Ask");
-        sendBtn.getStyleClass().addAll(Styles.BUTTON_OUTLINED, Styles.ACCENT);
+        Button sendBtn = new Button("Ask Coach");
+        sendBtn.getStyleClass().add("button-gradient");
         
         ProgressIndicator loading = new ProgressIndicator();
         loading.setMaxSize(24, 24);

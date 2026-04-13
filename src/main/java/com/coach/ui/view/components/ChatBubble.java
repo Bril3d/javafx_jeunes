@@ -46,11 +46,11 @@ public class ChatBubble extends HBox {
         if (isUser) {
             this.setAlignment(Pos.TOP_RIGHT);
             this.getChildren().addAll(messageContainer, iconContainer);
-            this.setStyle("-fx-background-color: -color-bg-subtle; -fx-background-radius: 8;");
+            this.getStyleClass().add("chat-bubble-user");
         } else {
             this.setAlignment(Pos.TOP_LEFT);
             this.getChildren().addAll(iconContainer, messageContainer);
-            this.setStyle("-fx-background-color: transparent;");
+            this.getStyleClass().add("chat-bubble-ai");
         }
     }
 }

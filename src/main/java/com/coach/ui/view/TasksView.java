@@ -7,25 +7,17 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import org.kordamp.ikonli.javafx.FontIcon;
-
-import java.time.LocalDate;
 import java.util.List;
 
 public class TasksView {
 
-    private final ViewManager viewManager;
     private final TaskService taskService;
     private final VBox root;
     private final VBox tasksListContainer;
 
     public TasksView(ViewManager viewManager) {
-        this.viewManager = viewManager;
         this.taskService = new TaskService(viewManager.getUserService());
         this.root = new VBox(20);
         this.tasksListContainer = new VBox(10);
@@ -45,7 +37,7 @@ public class TasksView {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         Button addTaskBtn = new Button("Add Task", new FontIcon("fth-plus"));
-        addTaskBtn.getStyleClass().addAll(Styles.BUTTON_OUTLINED, Styles.SUCCESS);
+        addTaskBtn.getStyleClass().add("button-gradient");
         addTaskBtn.setOnAction(e -> showAddTaskForm());
 
         headerBox.getChildren().addAll(header, spacer, addTaskBtn);
@@ -77,8 +69,8 @@ public class TasksView {
         HBox card = new HBox(15);
         card.setPadding(new Insets(15));
         card.setAlignment(Pos.CENTER_LEFT);
-        card.getStyleClass().add(Styles.ELEVATED_1);
-        card.setStyle("-fx-background-color: -color-bg-default; -fx-background-radius: 8px;");
+        card.getStyleClass().add("glass-panel");
+        card.setStyle("-fx-background-radius: 12px;");
 
         CheckBox doneCheck = new CheckBox();
         doneCheck.setSelected("DONE".equalsIgnoreCase(task.getStatus()));
