@@ -24,6 +24,19 @@ public class TaskService {
         return null;
     }
 
+    public List<Task> bulkAddTasks(List<Task> tasks) {
+        User user = userService.getCurrentUser();
+        List<Task> savedTasks = new java.util.ArrayList<>();
+        if (user != null) {
+            for (Task t : tasks) {
+                t.setUserId(user.getId());
+                Task saved = taskRepository.save(t);
+                if (saved != null) savedTasks.add(saved);
+            }
+        }
+        return savedTasks;
+    }
+
     public List<Task> getMyTasks() {
         User user = userService.getCurrentUser();
         if (user != null) {

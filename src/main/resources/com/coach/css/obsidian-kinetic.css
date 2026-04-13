@@ -79,6 +79,18 @@
     -fx-bar-fill: -color-accent-emphasis;
 }
 
+/* Specific Slice/Bar Colors */
+.chart-pie.default-color0 { -fx-background-color: #6366F1; } 
+.chart-pie.default-color1 { -fx-background-color: rgba(99, 102, 241, 0.4); } 
+.chart-pie.default-color2 { -fx-background-color: #10b981; }
+.chart-pie.default-color3 { -fx-background-color: #f59e0b; }
+
+.chart-bar.default-color0 { -fx-background-color: #6366F1; }
+.chart-bar.default-color1 { -fx-background-color: #10b981; }
+
+.chart-legend-item-symbol.default-color0 { -fx-background-color: #6366F1; }
+.chart-legend-item-symbol.default-color1 { -fx-background-color: rgba(99, 102, 241, 0.4); }
+
 .axis {
     -fx-tick-label-fill: -color-fg-muted;
     -fx-axis-label-fill: -color-fg-default;

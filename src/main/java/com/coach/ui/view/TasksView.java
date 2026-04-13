@@ -38,7 +38,7 @@ public class TasksView {
 
         Button addTaskBtn = new Button("Add Task", new FontIcon("fth-plus"));
         addTaskBtn.getStyleClass().add("button-gradient");
-        addTaskBtn.setOnAction(e -> showAddTaskForm());
+        addTaskBtn.setOnAction(e -> showTaskDialog(null));
 
         headerBox.getChildren().addAll(header, spacer, addTaskBtn);
 
@@ -94,6 +94,10 @@ public class TasksView {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
+        Button editBtn = new Button("", new FontIcon("fth-edit"));
+        editBtn.getStyleClass().addAll(Styles.BUTTON_ICON, Styles.FLAT);
+        editBtn.setOnAction(e -> showTaskDialog(task));
+
         Button deleteBtn = new Button("", new FontIcon("fth-trash-2"));
         deleteBtn.getStyleClass().addAll(Styles.BUTTON_ICON, Styles.DANGER, Styles.FLAT);
         deleteBtn.setOnAction(e -> {
@@ -101,53 +105,75 @@ public class TasksView {
             refreshTasks();
         });
 
-        card.getChildren().addAll(doneCheck, info, spacer, deleteBtn);
+        card.getChildren().addAll(doneCheck, info, spacer, editBtn, deleteBtn);
         return card;
     }
 
-    private void showAddTaskForm() {
+    private void showTaskDialog(Task taskToEdit) {
+        boolean isEdit = taskToEdit != null;
         Dialog<Task> dialog = new Dialog<>();
-        dialog.setTitle("New Task");
-        dialog.setHeaderText("Create a new productivity task");
+        dialog.setTitle(isEdit ? "Edit Task" : "New Task");
+        dialog.setHeaderText(isEdit ? "Update your task details" : "Create a new productivity task");
 
-        ButtonType saveButtonType = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        ButtonType saveButtonType = new ButtonType(isEdit ? "Update" : "Save", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
 
         GridPane grid = new GridPane();
         grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20, 150, 10, 10));
+        grid.setVgap(15);
+        grid.setPadding(new Insets(20));
 
-        TextField title = new TextField();
+        TextField title = new TextField(isEdit ? taskToEdit.getTitle() : "");
         title.setPromptText("Task Title");
-        TextField category = new TextField();
-        category.setPromptText("Category");
-        DatePicker deadline = new DatePicker();
+        
+        ComboBox<String> category = new ComboBox<>();
+        category.setEditable(true);
+        category.getItems().addAll("Work", "Personal", "Health", "Finance", "Shopping", "Learning");
+        if (isEdit) category.setValue(taskToEdit.getCategory());
+        else category.setPromptText("Category");
+
+        ComboBox<String> priority = new ComboBox<>();
+        priority.getItems().addAll("High", "Medium", "Low");
+        if (isEdit) {
+            priority.getSelectionModel().select(taskToEdit.getPriority() - 1);
+        } else {
+            priority.getSelectionModel().select(1); // Default to Medium
+        }
+
+        DatePicker deadline = new DatePicker(isEdit ? taskToEdit.getDeadline() : null);
 
         grid.add(new Label("Title:"), 0, 0);
         grid.add(title, 1, 0);
         grid.add(new Label("Category:"), 0, 1);
         grid.add(category, 1, 1);
-        grid.add(new Label("Deadline:"), 0, 2);
-        grid.add(deadline, 1, 2);
+        grid.add(new Label("Priority:"), 0, 2);
+        grid.add(priority, 1, 2);
+        grid.add(new Label("Deadline:"), 0, 3);
+        grid.add(deadline, 1, 3);
 
         dialog.getDialogPane().setContent(grid);
 
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == saveButtonType) {
-                Task t = new Task();
+                Task t = isEdit ? taskToEdit : new Task();
                 t.setTitle(title.getText());
-                t.setCategory(category.getText());
+                t.setCategory(category.getValue());
+                t.setPriority(priority.getSelectionModel().getSelectedIndex() + 1);
                 t.setDeadline(deadline.getValue());
-                t.setStatus("TODO");
-                t.setPriority(2);
+                if (!isEdit) {
+                    t.setStatus("TODO");
+                }
                 return t;
             }
             return null;
         });
 
         dialog.showAndWait().ifPresent(task -> {
-            taskService.addTask(task);
+            if (isEdit) {
+                taskService.updateTask(task);
+            } else {
+                taskService.addTask(task);
+            }
             refreshTasks();
         });
     }

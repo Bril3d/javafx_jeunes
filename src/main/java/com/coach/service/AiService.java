@@ -80,6 +80,29 @@ public class AiService {
                 },
                 "required": ["id"]
               }
+            },
+            {
+              "name": "bulkCreateTasks",
+              "description": "Create multiple tasks at once.",
+              "parameters": {
+                "type": "OBJECT",
+                "properties": {
+                  "tasks": {
+                    "type": "ARRAY",
+                    "items": {
+                      "type": "OBJECT",
+                      "properties": {
+                        "title": {"type": "STRING"},
+                        "description": {"type": "STRING"},
+                        "category": {"type": "STRING"},
+                        "priority": {"type": "INTEGER"}
+                      },
+                      "required": ["title"]
+                    }
+                  }
+                },
+                "required": ["tasks"]
+              }
             }
           ]
         }]
@@ -231,6 +254,23 @@ public class AiService {
                     int delId = args.get("id").getAsInt();
                     boolean deleted = taskRepository.delete(delId, userId);
                     result.addProperty("status", deleted ? "success" : "error");
+                    break;
+                case "bulkCreateTasks":
+                    JsonArray tasksToCreate = args.getAsJsonArray("tasks");
+                    int count = 0;
+                    for (int i = 0; i < tasksToCreate.size(); i++) {
+                        JsonObject tObj = tasksToCreate.get(i).getAsJsonObject();
+                        Task bt = new Task();
+                        bt.setUserId(userId);
+                        bt.setTitle(tObj.has("title") ? tObj.get("title").getAsString() : "Bulk Task");
+                        bt.setDescription(tObj.has("description") ? tObj.get("description").getAsString() : "");
+                        bt.setCategory(tObj.has("category") ? tObj.get("category").getAsString() : "General");
+                        bt.setPriority(tObj.has("priority") ? tObj.get("priority").getAsInt() : 2);
+                        bt.setStatus("TODO");
+                        if (taskRepository.save(bt) != null) count++;
+                    }
+                    result.addProperty("status", "success");
+                    result.addProperty("message", "Created " + count + " tasks successfully.");
                     break;
                 default:
                     result.addProperty("status", "error");

@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.coach</groupId>
-    <artifactId>productivity-coach</artifactId>
+    <artifactId>taskflow</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>Productivity Coach</name>
+    <name>Taskflow</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
