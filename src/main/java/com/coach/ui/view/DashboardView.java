@@ -68,12 +68,30 @@ public class DashboardView {
 
     private Chart createStatusChart(long completed, long todo) {
         PieChart chart = new PieChart();
-        chart.getData().add(new PieChart.Data("Done", completed));
-        chart.getData().add(new PieChart.Data("Todo", todo));
+        PieChart.Data doneData = new PieChart.Data("Done", completed);
+        PieChart.Data todoData = new PieChart.Data("Todo", todo);
+        chart.getData().addAll(doneData, todoData);
+
+        // Programmatic coloring to override theme defaults
+        applyPieDataStyle(doneData, "#6366F1"); // Indigo
+        applyPieDataStyle(todoData, "rgba(99, 102, 241, 0.4)"); // Muted Indigo
+
         chart.setLabelsVisible(true);
         chart.setLegendSide(javafx.geometry.Side.BOTTOM);
         chart.getStyleClass().add("modern-chart");
         return chart;
+    }
+
+    private void applyPieDataStyle(PieChart.Data data, String color) {
+        data.nodeProperty().addListener((obs, oldNode, newNode) -> {
+            if (newNode != null) {
+                newNode.setStyle("-fx-background-color: " + color + ";");
+            }
+        });
+        // Also try immediate applying if already exists
+        if (data.getNode() != null) {
+            data.getNode().setStyle("-fx-background-color: " + color + ";");
+        }
     }
 
     private Chart createCategoryChart(List<Task> tasks) {
@@ -85,7 +103,20 @@ public class DashboardView {
         BarChart<String, Number> chart = new BarChart<>(xAxis, yAxis);
         
         XYChart.Series<String, Number> series = new XYChart.Series<>();
-        counts.forEach((cat, count) -> series.getData().add(new XYChart.Data<>(cat, count)));
+        String[] palette = {"#6366F1", "#10b981", "#f59e0b", "#ec4899", "#8b5cf6"};
+        int i = 0;
+        
+        for (Map.Entry<String, Long> entry : counts.entrySet()) {
+            XYChart.Data<String, Number> data = new XYChart.Data<>(entry.getKey(), entry.getValue());
+            String color = palette[i % palette.length];
+            data.nodeProperty().addListener((obs, oldNode, newNode) -> {
+                if (newNode != null) {
+                    newNode.setStyle("-fx-background-color: " + color + ";");
+                }
+            });
+            series.getData().add(data);
+            i++;
+        }
         
         chart.getData().add(series);
         chart.setLegendVisible(false);

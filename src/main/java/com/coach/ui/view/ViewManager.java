@@ -21,10 +21,10 @@ public class ViewManager {
     private ViewManager(Scene scene) {
         this.mainScene = scene;
         this.userService = new UserService();
-        
+
         this.rootPane = new BorderPane();
         mainScene.setRoot(rootPane);
-        
+
         initSidebar();
     }
 
@@ -49,9 +49,10 @@ public class ViewManager {
         sidebar = new VBox(20);
         sidebar.setPadding(new Insets(20));
         sidebar.setPrefWidth(250);
-        sidebar.setStyle("-fx-background-color: -color-bg-subtle; -fx-border-color: -color-border-default; -fx-border-width: 0 1 0 0;");
+        sidebar.setStyle(
+                "-fx-background-color: -color-bg-subtle; -fx-border-color: -color-border-default; -fx-border-width: 0 1 0 0;");
 
-        Label logoLabel = new Label("Productivity\nCoach");
+        Label logoLabel = new Label("TaskFlow");
         logoLabel.getStyleClass().addAll(Styles.TITLE_3);
         logoLabel.setStyle("-fx-text-fill: -color-accent-emphasis;");
 
@@ -88,7 +89,7 @@ public class ViewManager {
         sidebar.setVisible(false);
         sidebar.setManaged(false);
         rootPane.setLeft(null);
-        
+
         rootPane.setCenter(new LandingView(this).getView());
     }
 
@@ -96,7 +97,7 @@ public class ViewManager {
         sidebar.setVisible(false);
         sidebar.setManaged(false);
         rootPane.setLeft(null);
-        
+
         AuthView authView = new AuthView(this);
         rootPane.setCenter(authView.getView());
     }
@@ -105,7 +106,7 @@ public class ViewManager {
         sidebar.setVisible(false);
         sidebar.setManaged(false);
         rootPane.setLeft(null);
-        
+
         RegisterView registerView = new RegisterView(this);
         rootPane.setCenter(registerView.getView());
     }

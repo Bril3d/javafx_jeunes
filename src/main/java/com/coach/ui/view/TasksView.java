@@ -8,6 +8,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.text.Text;
 import org.kordamp.ikonli.javafx.FontIcon;
 import java.util.List;
 
@@ -80,11 +81,14 @@ public class TasksView {
             refreshTasks();
         });
 
-        VBox info = new VBox(5);
-        Label title = new Label(task.getTitle());
+        VBox info = new VBox(2);
+        Text title = new Text(task.getTitle());
         title.getStyleClass().add(Styles.TITLE_4);
+        title.setFill(javafx.scene.paint.Color.WHITE);
+        
         if (doneCheck.isSelected()) {
-            title.setStyle("-fx-text-fill: -color-fg-muted; -fx-strikethrough: true;");
+            title.setStrikethrough(true);
+            title.setOpacity(0.5);
         }
 
         Label meta = new Label((task.getCategory() != null ? task.getCategory() : "No Category") + " | Due: " + (task.getDeadline() != null ? task.getDeadline() : "None"));

@@ -19,7 +19,15 @@ public class CoachApplication extends Application {
         // Initialize the Router/ViewManager
         com.coach.ui.view.ViewManager.init(scene);
 
-        stage.setTitle("Coach Intelligent de Productivité");
+        stage.setTitle("TaskFlow - Intelligent Productivity");
+        
+        // Set Favicon
+        try {
+            stage.getIcons().add(new javafx.scene.image.Image(getClass().getResourceAsStream("/com/coach/images/logo.png")));
+        } catch (Exception e) {
+            System.err.println("Could not load app icon: " + e.getMessage());
+        }
+
         stage.setScene(scene);
         stage.show();
     }

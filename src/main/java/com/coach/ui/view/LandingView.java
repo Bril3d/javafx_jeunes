@@ -1,6 +1,9 @@
 package com.coach.ui.view;
 
 import atlantafx.base.theme.Styles;
+import javafx.animation.FadeTransition;
+import javafx.animation.ParallelTransition;
+import javafx.animation.TranslateTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -8,6 +11,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.*;
+import javafx.util.Duration;
 
 public class LandingView {
 
@@ -21,12 +25,40 @@ public class LandingView {
         content.setStyle("-fx-background-color: -color-bg-default;");
         content.setAlignment(Pos.TOP_CENTER);
         
-        content.getChildren().addAll(createNavbar(), createHeroSection(), createFeaturesSection());
+        Node hero = createHeroSection();
+        Node features = createFeaturesSection();
+        
+        content.getChildren().addAll(createNavbar(), hero, features);
 
         this.root = new ScrollPane(content);
         root.setFitToWidth(true);
         root.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         root.setStyle("-fx-background-color: transparent; -fx-background: -color-bg-default;");
+
+        // Entrance Animation
+        playEntranceAnimation(hero, features);
+    }
+
+    private void playEntranceAnimation(Node hero, Node features) {
+        // Hero animation
+        hero.setOpacity(0);
+        FadeTransition fadeInHero = new FadeTransition(Duration.millis(1200), hero);
+        fadeInHero.setFromValue(0);
+        fadeInHero.setToValue(1);
+
+        TranslateTransition moveUpHero = new TranslateTransition(Duration.millis(1200), hero);
+        moveUpHero.setFromY(40);
+        moveUpHero.setToY(0);
+
+        // Features animation
+        features.setOpacity(0);
+        FadeTransition fadeInFeatures = new FadeTransition(Duration.millis(1200), features);
+        fadeInFeatures.setFromValue(0);
+        fadeInFeatures.setToValue(1);
+        fadeInFeatures.setDelay(Duration.millis(400));
+
+        ParallelTransition pt = new ParallelTransition(fadeInHero, moveUpHero, fadeInFeatures);
+        pt.play();
     }
 
     private Node createNavbar() {
