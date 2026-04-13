@@ -21,23 +21,25 @@ public class AuthView {
     private void initView() {
         root.setAlignment(Pos.CENTER);
         root.setPadding(new Insets(40));
-        root.setMaxWidth(400);
-        root.setMaxHeight(500);
-        root.getStyleClass().add(Styles.ELEVATED_2); // Card effect
-        root.setStyle("-fx-background-color: -color-bg-default; -fx-background-radius: 10px;");
+        root.setSpacing(25);
+        root.setMaxWidth(420);
+        root.getStyleClass().add("glass-panel");
 
-        Label title = new Label("Welcome Back");
-        title.getStyleClass().add(Styles.TITLE_2);
+        Label title = new Label("SIGN IN");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: 900; -fx-text-fill: white; -fx-letter-spacing: 2px;");
 
         TextField usernameField = new TextField();
-        usernameField.setPromptText("Username");
+        usernameField.setPromptText("Username or Email");
+        usernameField.setPrefHeight(45);
 
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("Password");
+        passwordField.setPrefHeight(45);
 
-        Button loginBtn = new Button("Login");
-        loginBtn.getStyleClass().addAll(Styles.ACCENT);
+        Button loginBtn = new Button("Login to TaskFlow");
+        loginBtn.getStyleClass().add("button-gradient");
         loginBtn.setMaxWidth(Double.MAX_VALUE);
+        loginBtn.setPrefHeight(45);
 
         Label errorLabel = new Label();
         errorLabel.getStyleClass().add(Styles.DANGER);
@@ -53,25 +55,17 @@ public class AuthView {
             }
         });
 
-        // Simplified: Add a register button
-        Button registerBtn = new Button("Register New Account");
-        registerBtn.getStyleClass().addAll(Styles.FLAT);
-        registerBtn.setMaxWidth(Double.MAX_VALUE);
-        registerBtn.setOnAction(e -> {
-            boolean success = viewManager.getUserService().register(usernameField.getText(), usernameField.getText() + "@coach.com", passwordField.getText());
-            if (success) {
-                errorLabel.getStyleClass().remove(Styles.DANGER);
-                errorLabel.getStyleClass().add(Styles.SUCCESS);
-                errorLabel.setText("Registration successful! You can now login.");
-                errorLabel.setVisible(true);
-            } else {
-                errorLabel.getStyleClass().add(Styles.DANGER);
-                errorLabel.setText("Username already exists!");
-                errorLabel.setVisible(true);
-            }
-        });
+        Button registerLink = new Button("Don't have an account? Sign Up");
+        registerLink.getStyleClass().addAll(Styles.FLAT, Styles.SMALL);
+        registerLink.setStyle("-fx-text-fill: -color-accent-emphasis;");
+        registerLink.setOnAction(e -> viewManager.navigateToRegister());
 
-        root.getChildren().addAll(title, usernameField, passwordField, errorLabel, loginBtn, registerBtn);
+        Button backBtn = new Button("← Back to Home");
+        backBtn.getStyleClass().addAll(Styles.FLAT, Styles.SMALL);
+        backBtn.setStyle("-fx-text-fill: white; -fx-opacity: 0.7;");
+        backBtn.setOnAction(e -> viewManager.navigateToLanding());
+
+        root.getChildren().addAll(title, usernameField, passwordField, errorLabel, loginBtn, registerLink, backBtn);
     }
 
     public Node getView() {

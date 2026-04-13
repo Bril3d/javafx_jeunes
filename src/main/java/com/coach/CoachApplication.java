@@ -14,6 +14,7 @@ public class CoachApplication extends Application {
         Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
 
         Scene scene = new Scene(new StackPane(), 1024, 768);
+        scene.getStylesheets().add(getClass().getResource("/com/coach/css/obsidian-kinetic.css").toExternalForm());
         
         // Initialize the Router/ViewManager
         com.coach.ui.view.ViewManager.init(scene);

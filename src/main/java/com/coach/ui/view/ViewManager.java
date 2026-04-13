@@ -32,7 +32,8 @@ public class ViewManager {
         if (instance == null) {
             instance = new ViewManager(scene);
             // Default view based on auth text
-            instance.navigateToAuth();
+            // Default view starts at the Landing Page
+            instance.navigateToLanding();
         }
     }
 
@@ -83,6 +84,14 @@ public class ViewManager {
         sidebar.getChildren().addAll(logoLabel, new Region() /* spacer */, dashBtn, tasksBtn, aiBtn, spacer, logoutBtn);
     }
 
+    public void navigateToLanding() {
+        sidebar.setVisible(false);
+        sidebar.setManaged(false);
+        rootPane.setLeft(null);
+        
+        rootPane.setCenter(new LandingView(this).getView());
+    }
+
     public void navigateToAuth() {
         sidebar.setVisible(false);
         sidebar.setManaged(false);
@@ -90,6 +99,15 @@ public class ViewManager {
         
         AuthView authView = new AuthView(this);
         rootPane.setCenter(authView.getView());
+    }
+
+    public void navigateToRegister() {
+        sidebar.setVisible(false);
+        sidebar.setManaged(false);
+        rootPane.setLeft(null);
+        
+        RegisterView registerView = new RegisterView(this);
+        rootPane.setCenter(registerView.getView());
     }
 
     public void navigateToDashboard() {
