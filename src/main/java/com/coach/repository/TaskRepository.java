@@ -140,4 +140,42 @@ public class TaskRepository {
         }
         return tasks;
     }
+
+    public boolean deleteById(int id) {
+        String sql = "DELETE FROM tasks WHERE id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean updateById(Task task) {
+        String sql = "UPDATE tasks SET title=?, description=?, category=?, priority=?, deadline=?, status=?, time_spent_minutes=?, estimated_time_minutes=? WHERE id=?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setString(1, task.getTitle());
+            pstmt.setString(2, task.getDescription());
+            pstmt.setString(3, task.getCategory());
+            pstmt.setInt(4, task.getPriority());
+            if (task.getDeadline() != null) {
+                pstmt.setDate(5, Date.valueOf(task.getDeadline()));
+            } else {
+                pstmt.setNull(5, Types.DATE);
+            }
+            pstmt.setString(6, task.getStatus());
+            pstmt.setInt(7, task.getTimeSpentMinutes());
+            pstmt.setInt(8, task.getEstimatedTimeMinutes());
+            pstmt.setInt(9, task.getId());
+            
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

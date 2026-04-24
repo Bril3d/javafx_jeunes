@@ -77,4 +77,14 @@ public class UserService {
         if (!isAdmin()) return new java.util.ArrayList<>();
         return userRepository.findAll();
     }
+
+    public boolean deleteUser(int id) {
+        if (!isAdmin()) return false;
+        return userRepository.delete(id);
+    }
+
+    public boolean updateUser(User user) {
+        if (!isAdmin()) return false;
+        return userRepository.update(user);
+    }
 }

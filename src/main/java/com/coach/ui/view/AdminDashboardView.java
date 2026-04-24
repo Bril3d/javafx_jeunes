@@ -90,8 +90,89 @@ public class AdminDashboardView {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        row.getChildren().addAll(userInfo, spacer, stats);
+        HBox actions = new HBox(10);
+        actions.setAlignment(Pos.CENTER);
+
+        Button manageTasksBtn = new Button("Tasks", new FontIcon("fth-list"));
+        manageTasksBtn.getStyleClass().add(Styles.BUTTON_OUTLINED);
+        manageTasksBtn.setOnAction(e -> showManageTasksDialog(user));
+
+        Button editBtn = new Button("", new FontIcon("fth-edit"));
+        editBtn.getStyleClass().addAll(Styles.BUTTON_ICON, Styles.FLAT);
+        editBtn.setOnAction(e -> showEditUserDialog(user));
+
+        Button deleteBtn = new Button("", new FontIcon("fth-trash-2"));
+        deleteBtn.getStyleClass().addAll(Styles.BUTTON_ICON, Styles.DANGER, Styles.FLAT);
+        deleteBtn.setOnAction(e -> {
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Delete user " + user.getUsername() + "? This will also delete all their tasks.", ButtonType.YES, ButtonType.NO);
+            confirm.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.YES) {
+                    userService.deleteUser(user.getId());
+                    refreshData();
+                }
+            });
+        });
+
+        actions.getChildren().addAll(manageTasksBtn, editBtn, deleteBtn);
+
+        row.getChildren().addAll(userInfo, spacer, stats, new Separator(javafx.geometry.Orientation.VERTICAL), actions);
         return row;
+    }
+
+    private void showEditUserDialog(User user) {
+        Dialog<User> dialog = new Dialog<>();
+        dialog.setTitle("Edit User");
+        dialog.setHeaderText("Modify user details for " + user.getUsername());
+
+        ButtonType saveButtonType = new ButtonType("Update", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(15);
+        grid.setPadding(new Insets(20));
+
+        TextField username = new TextField(user.getUsername());
+        TextField email = new TextField(user.getEmail());
+        ComboBox<String> role = new ComboBox<>();
+        role.getItems().addAll("USER", "ADMIN");
+        role.setValue(user.getRole());
+
+        grid.add(new Label("Username:"), 0, 0);
+        grid.add(username, 1, 0);
+        grid.add(new Label("Email:"), 0, 1);
+        grid.add(email, 1, 1);
+        grid.add(new Label("Role:"), 0, 2);
+        grid.add(role, 1, 2);
+
+        dialog.getDialogPane().setContent(grid);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == saveButtonType) {
+                user.setUsername(username.getText());
+                user.setEmail(email.getText());
+                user.setRole(role.getValue());
+                return user;
+            }
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(updatedUser -> {
+            userService.updateUser(updatedUser);
+            refreshData();
+        });
+    }
+
+    private void showManageTasksDialog(User user) {
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Manage Tasks - " + user.getUsername());
+        
+        AdminTaskManagementView taskView = new AdminTaskManagementView(userService, user);
+        dialog.getDialogPane().setContent(taskView.getView());
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+        
+        dialog.showAndWait();
+        refreshData(); // Refresh metrics in case tasks were deleted
     }
 
     private VBox createStat(String label, String value, String iconCode) {

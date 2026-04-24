@@ -93,4 +93,19 @@ public class TaskService {
         }
         return score;
     }
+
+    public List<Task> getTasksByUserId(int userId) {
+        if (!userService.isAdmin()) return List.of();
+        return taskRepository.findByUserId(userId);
+    }
+
+    public boolean adminDeleteTask(int taskId) {
+        if (!userService.isAdmin()) return false;
+        return taskRepository.deleteById(taskId);
+    }
+
+    public boolean adminUpdateTask(Task task) {
+        if (!userService.isAdmin()) return false;
+        return taskRepository.updateById(task);
+    }
 }
