@@ -9,7 +9,7 @@ import java.util.Optional;
 public class UserRepository {
 
     public User save(User user) {
-        String sql = "INSERT INTO users (username, email, password_hash, goals, work_rhythm, preferences) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO users (username, email, password_hash, goals, work_rhythm, preferences, role) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
@@ -19,6 +19,7 @@ public class UserRepository {
             pstmt.setString(4, user.getGoals());
             pstmt.setString(5, user.getWorkRhythm());
             pstmt.setString(6, user.getPreferences());
+            pstmt.setString(7, user.getRole());
             
             int affectedRows = pstmt.executeUpdate();
             if (affectedRows > 0) {
@@ -95,10 +96,26 @@ public class UserRepository {
         user.setGoals(rs.getString("goals"));
         user.setWorkRhythm(rs.getString("work_rhythm"));
         user.setPreferences(rs.getString("preferences"));
+        user.setRole(rs.getString("role"));
         Timestamp createdAt = rs.getTimestamp("created_at");
         if (createdAt != null) {
             user.setCreatedAt(createdAt.toLocalDateTime());
         }
         return user;
+    }
+
+    public java.util.List<User> findAll() {
+        java.util.List<User> users = new java.util.ArrayList<>();
+        String sql = "SELECT * FROM users";
+        try (Connection conn = DatabaseConfig.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                users.add(extractUser(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return users;
     }
 }

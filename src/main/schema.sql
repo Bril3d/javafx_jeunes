@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     goals TEXT,
     work_rhythm VARCHAR(255),
     preferences TEXT,
+    role VARCHAR(20) DEFAULT 'USER',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

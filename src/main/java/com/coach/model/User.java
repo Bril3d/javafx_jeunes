@@ -10,6 +10,7 @@ public class User {
     private String goals;
     private String workRhythm;
     private String preferences;
+    private String role;
     private LocalDateTime createdAt;
 
     public User() {
@@ -20,9 +21,10 @@ public class User {
         this.username = username;
         this.email = email;
         this.passwordHash = passwordHash;
+        this.role = "USER";
     }
 
-    public User(int id, String username, String email, String passwordHash, String goals, String workRhythm, String preferences, LocalDateTime createdAt) {
+    public User(int id, String username, String email, String passwordHash, String goals, String workRhythm, String preferences, String role, LocalDateTime createdAt) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -30,6 +32,7 @@ public class User {
         this.goals = goals;
         this.workRhythm = workRhythm;
         this.preferences = preferences;
+        this.role = role;
         this.createdAt = createdAt;
     }
 
@@ -53,6 +56,9 @@ public class User {
 
     public String getPreferences() { return preferences; }
     public void setPreferences(String preferences) { this.preferences = preferences; }
+
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

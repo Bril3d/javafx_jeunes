@@ -125,4 +125,19 @@ public class TaskRepository {
         }
         return task;
     }
+
+    public List<Task> findAll() {
+        List<Task> tasks = new ArrayList<>();
+        String sql = "SELECT * FROM tasks ORDER BY created_at DESC";
+        try (Connection conn = DatabaseConfig.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                tasks.add(extractTask(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return tasks;
+    }
 }

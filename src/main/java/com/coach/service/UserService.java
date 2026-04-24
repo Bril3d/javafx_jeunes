@@ -12,6 +12,17 @@ public class UserService {
 
     public UserService() {
         this.userRepository = new UserRepository();
+        seedAdmin();
+    }
+
+    private void seedAdmin() {
+        if (userRepository.findByUsername("admin").isEmpty()) {
+            String hashedPassword = BCrypt.hashpw("admin123", BCrypt.gensalt(12));
+            User admin = new User(0, "admin", "admin@productivitycoach.com", hashedPassword);
+            admin.setRole("ADMIN");
+            userRepository.save(admin);
+            System.out.println("Admin account seeded: admin / admin123");
+        }
     }
 
     public boolean register(String username, String email, String password) {
@@ -56,5 +67,14 @@ public class UserService {
         currentUser.setWorkRhythm(workRhythm);
         currentUser.setPreferences(preferences);
         return userRepository.updateProfile(currentUser);
+    }
+
+    public boolean isAdmin() {
+        return currentUser != null && "ADMIN".equalsIgnoreCase(currentUser.getRole());
+    }
+
+    public java.util.List<User> getAllUsers() {
+        if (!isAdmin()) return new java.util.ArrayList<>();
+        return userRepository.findAll();
     }
 }

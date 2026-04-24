@@ -6,7 +6,10 @@ import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
 import javafx.scene.layout.*;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 
 public class ViewManager {
     private static ViewManager instance;
@@ -48,50 +51,51 @@ public class ViewManager {
         sidebar = new VBox(20);
         sidebar.setPadding(new Insets(20));
         sidebar.setPrefWidth(250);
-        sidebar.setStyle(
-                "-fx-background-color: -color-bg-subtle; -fx-border-color: -color-border-default; -fx-border-width: 0 1 0 0;");
+        sidebar.setStyle("-fx-background-color: -color-bg-subtle; -fx-border-color: -color-border-default; -fx-border-width: 0 1 0 0;");
+        refreshSidebar();
+    }
 
+    private void refreshSidebar() {
+        if (sidebar == null) return;
+        sidebar.getChildren().clear();
+        
         Label logoLabel = new Label("TaskFlow");
         logoLabel.getStyleClass().addAll(Styles.TITLE_3);
         logoLabel.setStyle("-fx-text-fill: -color-accent-emphasis;");
 
-        Button dashBtn = new Button("📊 Dashboard");
-        dashBtn.getStyleClass().addAll(Styles.BUTTON_OUTLINED, Styles.ACCENT);
-        dashBtn.setMaxWidth(Double.MAX_VALUE);
-        dashBtn.setOnAction(e -> navigateToDashboard());
+        VBox navItems = new VBox(10);
+        
+        Button dashBtn = createNavBtn("📊 Dashboard", e -> navigateToDashboard(), Styles.ACCENT);
+        Button tasksBtn = createNavBtn("✅ Tasks", e -> navigateToTasks(), Styles.ACCENT);
+        Button calBtn = createNavBtn("📅 Calendar", e -> navigateToCalendar(), Styles.ACCENT);
+        Button profileBtn = createNavBtn("👤 My Profile", e -> navigateToProfile(), Styles.ACCENT);
+        Button aiBtn = createNavBtn("🤖 AI Assistant", e -> navigateToAi(), Styles.SUCCESS);
+        
+        navItems.getChildren().addAll(dashBtn, tasksBtn, calBtn, profileBtn, aiBtn);
 
-        Button tasksBtn = new Button("✅ Tasks");
-        tasksBtn.getStyleClass().addAll(Styles.BUTTON_OUTLINED, Styles.ACCENT);
-        tasksBtn.setMaxWidth(Double.MAX_VALUE);
-        tasksBtn.setOnAction(e -> navigateToTasks());
+        if (userService.isAdmin()) {
+            Button adminBtn = createNavBtn("🔐 Admin Console", e -> navigateToAdminDashboard(), Styles.WARNING);
+            navItems.getChildren().add(new Separator());
+            navItems.getChildren().add(adminBtn);
+        }
 
-        Button calBtn = new Button("📅 Calendar");
-        calBtn.getStyleClass().addAll(Styles.BUTTON_OUTLINED, Styles.ACCENT);
-        calBtn.setMaxWidth(Double.MAX_VALUE);
-        calBtn.setOnAction(e -> navigateToCalendar());
-
-        Button profileBtn = new Button("👤 My Profile");
-        profileBtn.getStyleClass().addAll(Styles.BUTTON_OUTLINED, Styles.ACCENT);
-        profileBtn.setMaxWidth(Double.MAX_VALUE);
-        profileBtn.setOnAction(e -> navigateToProfile());
-
-        Button aiBtn = new Button("🤖 AI Assistant");
-        aiBtn.getStyleClass().addAll(Styles.BUTTON_OUTLINED, Styles.SUCCESS);
-        aiBtn.setMaxWidth(Double.MAX_VALUE);
-        aiBtn.setOnAction(e -> navigateToAi());
-
-        Button logoutBtn = new Button("🚪 Logout");
-        logoutBtn.getStyleClass().addAll(Styles.BUTTON_OUTLINED, Styles.DANGER);
-        logoutBtn.setMaxWidth(Double.MAX_VALUE);
-        logoutBtn.setOnAction(e -> {
+        Button logoutBtn = createNavBtn("🚪 Logout", e -> {
             userService.logout();
             navigateToAuth();
-        });
+        }, Styles.DANGER);
 
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        sidebar.getChildren().addAll(logoLabel, new Region(), dashBtn, tasksBtn, calBtn, profileBtn, aiBtn, spacer, logoutBtn);
+        sidebar.getChildren().addAll(logoLabel, new Region(), navItems, spacer, logoutBtn);
+    }
+
+    private Button createNavBtn(String text, EventHandler<ActionEvent> handler, String style) {
+        Button btn = new Button(text);
+        btn.getStyleClass().addAll(Styles.BUTTON_OUTLINED, style);
+        btn.setMaxWidth(Double.MAX_VALUE);
+        btn.setOnAction(handler);
+        return btn;
     }
 
     public void navigateToLanding() {
@@ -145,7 +149,13 @@ public class ViewManager {
         rootPane.setCenter(new ProfileView(this).getView());
     }
 
+    public void navigateToAdminDashboard() {
+        showSidebar();
+        rootPane.setCenter(new AdminDashboardView(userService).getView());
+    }
+
     private void showSidebar() {
+        refreshSidebar();
         if (!sidebar.isVisible()) {
             sidebar.setVisible(true);
             sidebar.setManaged(true);
