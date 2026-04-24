@@ -6,6 +6,9 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
+    goals TEXT,
+    work_rhythm VARCHAR(255),
+    preferences TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -18,6 +21,8 @@ CREATE TABLE IF NOT EXISTS tasks (
     priority INT DEFAULT 2, -- 1: High, 2: Medium, 3: Low
     deadline DATE,
     status VARCHAR(20) DEFAULT 'TODO', -- TODO, IN_PROGRESS, DONE
+    time_spent_minutes INT DEFAULT 0,
+    estimated_time_minutes INT DEFAULT 30,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

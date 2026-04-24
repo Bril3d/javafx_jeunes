@@ -19,6 +19,7 @@ public class AiService {
     private final String apiKey;
     private final HttpClient httpClient;
     private final TaskRepository taskRepository;
+    private final com.coach.repository.UserRepository userRepository;
     private final List<JsonObject> chatHistory;
     private final JsonArray tools;
 
@@ -28,6 +29,7 @@ public class AiService {
         this.apiKey = (key != null && !key.isEmpty()) ? key : System.getenv("GEMINI_API_KEY");
         this.httpClient = HttpClient.newHttpClient();
         this.taskRepository = new TaskRepository();
+        this.userRepository = new com.coach.repository.UserRepository();
         this.chatHistory = new ArrayList<>();
         this.tools = defineTools();
     }
@@ -131,7 +133,19 @@ public class AiService {
                 
                 JsonObject sysInst = new JsonObject();
                 JsonObject sysPart = new JsonObject();
-                sysPart.addProperty("text", "You are a helpful productivity coach. You can manage tasks for the user using the provided tools. Always summarize what was done briefly and warmly. If asked to do something, do it and confirm.");
+                
+                StringBuilder sysText = new StringBuilder("You are a helpful productivity coach. You can manage tasks for the user using the provided tools. Always summarize what was done briefly and warmly. If asked to do something, do it and confirm.");
+                
+                // Fetch user context for personalization
+                com.coach.model.User user = userRepository.findById(userId);
+                if (user != null) {
+                    sysText.append("\nUser Context:");
+                    if (user.getGoals() != null && !user.getGoals().isEmpty()) sysText.append("\n- Goals: ").append(user.getGoals());
+                    if (user.getWorkRhythm() != null && !user.getWorkRhythm().isEmpty()) sysText.append("\n- Work Rhythm: ").append(user.getWorkRhythm());
+                    if (user.getPreferences() != null && !user.getPreferences().isEmpty()) sysText.append("\n- Preferences: ").append(user.getPreferences());
+                }
+                
+                sysPart.addProperty("text", sysText.toString());
                 JsonArray sysParts = new JsonArray();
                 sysParts.add(sysPart);
                 sysInst.add("parts", sysParts);

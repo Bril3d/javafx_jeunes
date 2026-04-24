@@ -67,4 +67,30 @@ public class TaskService {
             .count();
         return (double) completed / tasks.size();
     }
+
+    public List<Task> getAutoPrioritizedTasks() {
+        List<Task> tasks = new java.util.ArrayList<>(getMyTasks());
+        tasks.sort((t1, t2) -> {
+            // DONE tasks go to bottom
+            if (t1.getStatus().equals("DONE") && !t2.getStatus().equals("DONE")) return 1;
+            if (!t1.getStatus().equals("DONE") && t2.getStatus().equals("DONE")) return -1;
+            
+            // Priority score: Priority(1-3) * 10 + DaysUntilDeadline
+            long score1 = calculateScore(t1);
+            long score2 = calculateScore(t2);
+            return Long.compare(score1, score2);
+        });
+        return tasks;
+    }
+
+    private long calculateScore(Task t) {
+        long score = t.getPriority() * 100; // Priority is 1, 2, or 3. 1 is highest.
+        if (t.getDeadline() != null) {
+            long days = java.time.temporal.ChronoUnit.DAYS.between(java.time.LocalDate.now(), t.getDeadline());
+            score += Math.max(0, days);
+        } else {
+            score += 1000; // No deadline = lower priority
+        }
+        return score;
+    }
 }

@@ -1,6 +1,5 @@
 package com.coach.ui.view;
 
-import atlantafx.base.theme.Styles;
 import com.coach.model.Task;
 import com.coach.service.TaskService;
 import javafx.geometry.Insets;
@@ -41,15 +40,18 @@ public class DashboardView {
 
         // Stats Row
         HBox statsRow = new HBox(20);
+        long totalMinutes = tasks.stream().mapToLong(Task::getTimeSpentMinutes).sum();
+        String totalHours = String.format("%.1fh", totalMinutes / 60.0);
+        
         statsRow.getChildren().addAll(
             createStatCard("TOTAL TASKS", String.valueOf(tasks.size()), "fth-list", "-color-accent-emphasis"),
-            createStatCard("COMPLETED", String.valueOf(completed), "fth-check-circle", "-color-success-emphasis"),
-            createStatCard("PRODUCTIVITY", String.format("%.0f%%", rate * 100), "fth-trending-up", "#facc15")
+            createStatCard("TIME TRACKED", totalHours, "fth-clock", "#facc15"),
+            createStatCard("PRODUCTIVITY", String.format("%.0f%%", rate * 100), "fth-trending-up", "-color-success-emphasis")
         );
 
-        // Charts Row
+        // Charts Row 1
         HBox chartsRow = new HBox(30);
-        chartsRow.setPrefHeight(400);
+        chartsRow.setPrefHeight(350);
         
         VBox pieContainer = new VBox(20, new Label("TASK DISTRIBUTION"), createStatusChart(completed, todo));
         pieContainer.getStyleClass().add("glass-panel");
@@ -63,7 +65,55 @@ public class DashboardView {
 
         chartsRow.getChildren().addAll(pieContainer, barContainer);
 
-        root.getChildren().addAll(header, statsRow, chartsRow);
+        // Charts Row 2: Time Comparison
+        VBox timeContainer = new VBox(20, new Label("TIME ANALYSIS (ESTIMATED VS ACTUAL)"), createTimeComparisonChart(tasks));
+        timeContainer.getStyleClass().add("glass-panel");
+        timeContainer.setPadding(new Insets(20));
+        timeContainer.setPrefHeight(350);
+
+        root.getChildren().addAll(header, statsRow, chartsRow, timeContainer);
+    }
+
+    private Chart createTimeComparisonChart(List<Task> tasks) {
+        CategoryAxis xAxis = new CategoryAxis();
+        NumberAxis yAxis = new NumberAxis();
+        yAxis.setLabel("Minutes");
+        BarChart<String, Number> chart = new BarChart<>(xAxis, yAxis);
+
+        XYChart.Series<String, Number> estSeries = new XYChart.Series<>();
+        estSeries.setName("Estimated");
+        XYChart.Series<String, Number> spentSeries = new XYChart.Series<>();
+        spentSeries.setName("Spent");
+
+        // Take top 5 recent tasks or some subset to avoid clutter
+        List<Task> recentTasks = tasks.stream()
+            .sorted((t1, t2) -> Long.compare(t2.getId(), t1.getId()))
+            .limit(7)
+            .collect(Collectors.toList());
+
+        for (Task t : recentTasks) {
+            String shortTitle = t.getTitle().length() > 10 ? t.getTitle().substring(0, 10) + "..." : t.getTitle();
+            XYChart.Data<String, Number> estData = new XYChart.Data<>(shortTitle, t.getEstimatedTimeMinutes());
+            XYChart.Data<String, Number> spentData = new XYChart.Data<>(shortTitle, t.getTimeSpentMinutes());
+            
+            estSeries.getData().add(estData);
+            spentSeries.getData().add(spentData);
+        }
+
+        chart.getData().addAll(estSeries, spentSeries);
+        chart.getStyleClass().add("modern-chart");
+        
+        // Custom colors for bars
+        chart.getData().forEach(s -> {
+            String color = s.getName().equals("Estimated") ? "#6366F1" : "#10b981";
+            for (XYChart.Data<String, Number> data : s.getData()) {
+                data.nodeProperty().addListener((obs, oldNode, newNode) -> {
+                    if (newNode != null) newNode.setStyle("-fx-background-color: " + color + ";");
+                });
+            }
+        });
+
+        return chart;
     }
 
     private Chart createStatusChart(long completed, long todo) {
@@ -102,6 +152,7 @@ public class DashboardView {
         NumberAxis yAxis = new NumberAxis();
         BarChart<String, Number> chart = new BarChart<>(xAxis, yAxis);
         
+        @SuppressWarnings("unchecked")
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         String[] palette = {"#6366F1", "#10b981", "#f59e0b", "#ec4899", "#8b5cf6"};
         int i = 0;

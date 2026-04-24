@@ -12,12 +12,14 @@ public class Task {
     private int priority; // 1 = High, 2 = Medium, 3 = Low
     private LocalDate deadline;
     private String status; // TODO, IN_PROGRESS, DONE
+    private int timeSpentMinutes;
+    private int estimatedTimeMinutes;
     private LocalDateTime createdAt;
 
     public Task() {
     }
 
-    public Task(int id, int userId, String title, String description, String category, int priority, LocalDate deadline, String status, LocalDateTime createdAt) {
+    public Task(int id, int userId, String title, String description, String category, int priority, LocalDate deadline, String status, int timeSpentMinutes, int estimatedTimeMinutes, LocalDateTime createdAt) {
         this.id = id;
         this.userId = userId;
         this.title = title;
@@ -26,6 +28,8 @@ public class Task {
         this.priority = priority;
         this.deadline = deadline;
         this.status = status;
+        this.timeSpentMinutes = timeSpentMinutes;
+        this.estimatedTimeMinutes = estimatedTimeMinutes;
         this.createdAt = createdAt;
     }
 
@@ -52,6 +56,12 @@ public class Task {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public int getTimeSpentMinutes() { return timeSpentMinutes; }
+    public void setTimeSpentMinutes(int timeSpentMinutes) { this.timeSpentMinutes = timeSpentMinutes; }
+
+    public int getEstimatedTimeMinutes() { return estimatedTimeMinutes; }
+    public void setEstimatedTimeMinutes(int estimatedTimeMinutes) { this.estimatedTimeMinutes = estimatedTimeMinutes; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

@@ -20,7 +20,7 @@ public class UserService {
         }
 
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt(12));
-        User newUser = new User(0, username, email, hashedPassword, null);
+        User newUser = new User(0, username, email, hashedPassword);
         
         User savedUser = userRepository.save(newUser);
         return savedUser != null;
@@ -48,5 +48,13 @@ public class UserService {
 
     public boolean isLoggedIn() {
         return currentUser != null;
+    }
+
+    public boolean updateProfile(String goals, String workRhythm, String preferences) {
+        if (currentUser == null) return false;
+        currentUser.setGoals(goals);
+        currentUser.setWorkRhythm(workRhythm);
+        currentUser.setPreferences(preferences);
+        return userRepository.updateProfile(currentUser);
     }
 }

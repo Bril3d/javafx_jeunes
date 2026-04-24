@@ -10,7 +10,13 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import org.kordamp.ikonli.javafx.FontIcon;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 public class TasksView {
 
@@ -52,9 +58,17 @@ public class TasksView {
         root.getChildren().addAll(headerBox, scrollPane);
     }
 
+    private final Map<Integer, Timeline> activeTimelines = new HashMap<>();
+    private final Map<Integer, Integer> sessionMinutes = new HashMap<>();
+
     private void refreshTasks() {
+        // Stop all timelines before clearing
+        activeTimelines.values().forEach(Timeline::stop);
+        activeTimelines.clear();
+        sessionMinutes.clear();
+
         tasksListContainer.getChildren().clear();
-        List<Task> tasks = taskService.getMyTasks();
+        List<Task> tasks = taskService.getAutoPrioritizedTasks();
         if (tasks.isEmpty()) {
             Label emptyLbl = new Label("No tasks yet. Create one!");
             emptyLbl.getStyleClass().add(Styles.TEXT_MUTED);
@@ -91,12 +105,51 @@ public class TasksView {
             title.setOpacity(0.5);
         }
 
-        Label meta = new Label((task.getCategory() != null ? task.getCategory() : "No Category") + " | Due: " + (task.getDeadline() != null ? task.getDeadline() : "None"));
+        Label timeLbl = new Label(task.getTimeSpentMinutes() + "/" + task.getEstimatedTimeMinutes() + "m");
+        timeLbl.getStyleClass().add(Styles.TEXT_SUBTLE);
+
+        Label meta = new Label((task.getCategory() != null ? task.getCategory() : "No Category") + 
+                               " | Due: " + (task.getDeadline() != null ? task.getDeadline() : "None"));
         meta.getStyleClass().add(Styles.TEXT_SUBTLE);
-        info.getChildren().addAll(title, meta);
+        
+        HBox metaBox = new HBox(10, meta, timeLbl);
+        info.getChildren().addAll(title, metaBox);
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        Button timerBtn = new Button("", new FontIcon("fth-play"));
+        timerBtn.getStyleClass().addAll(Styles.BUTTON_ICON, Styles.FLAT);
+        
+        timerBtn.setOnAction(e -> {
+            if (activeTimelines.containsKey(task.getId())) {
+                // Stop timer
+                activeTimelines.get(task.getId()).stop();
+                activeTimelines.remove(task.getId());
+                timerBtn.setGraphic(new FontIcon("fth-play"));
+                taskService.updateTask(task); // Save accumulated time
+            } else {
+                // Start timer
+                timerBtn.setGraphic(new FontIcon("fth-square"));
+                Timeline timeline = new Timeline(new KeyFrame(Duration.minutes(1), ev -> {
+                    int current = sessionMinutes.getOrDefault(task.getId(), 0);
+                    sessionMinutes.put(task.getId(), current + 1);
+                    
+                    // Save to DB every minute
+                    task.setTimeSpentMinutes(task.getTimeSpentMinutes() + 1);
+                    taskService.updateTask(task);
+                    
+                    timeLbl.setText(task.getTimeSpentMinutes() + "/" + task.getEstimatedTimeMinutes() + "m");
+                }));
+                timeline.setCycleCount(Animation.INDEFINITE);
+                timeline.play();
+                activeTimelines.put(task.getId(), timeline);
+            }
+        });
+
+        Button logTimeBtn = new Button("", new FontIcon("fth-plus-circle"));
+        logTimeBtn.getStyleClass().addAll(Styles.BUTTON_ICON, Styles.FLAT);
+        logTimeBtn.setOnAction(e -> showLogTimeDialog(task));
 
         Button editBtn = new Button("", new FontIcon("fth-edit"));
         editBtn.getStyleClass().addAll(Styles.BUTTON_ICON, Styles.FLAT);
@@ -109,8 +162,25 @@ public class TasksView {
             refreshTasks();
         });
 
-        card.getChildren().addAll(doneCheck, info, spacer, editBtn, deleteBtn);
+        card.getChildren().addAll(doneCheck, info, spacer, timerBtn, logTimeBtn, editBtn, deleteBtn);
         return card;
+    }
+
+    private void showLogTimeDialog(Task task) {
+        TextInputDialog dialog = new TextInputDialog("15");
+        dialog.setTitle("Log Time");
+        dialog.setHeaderText("Log time spent on: " + task.getTitle());
+        dialog.setContentText("Minutes spent:");
+        dialog.showAndWait().ifPresent(minutes -> {
+            try {
+                int mins = Integer.parseInt(minutes);
+                task.setTimeSpentMinutes(task.getTimeSpentMinutes() + mins);
+                taskService.updateTask(task);
+                refreshTasks();
+            } catch (NumberFormatException e) {
+                // Ignore invalid input
+            }
+        });
     }
 
     private void showTaskDialog(Task taskToEdit) {
@@ -130,11 +200,13 @@ public class TasksView {
         TextField title = new TextField(isEdit ? taskToEdit.getTitle() : "");
         title.setPromptText("Task Title");
         
-        ComboBox<String> category = new ComboBox<>();
-        category.setEditable(true);
-        category.getItems().addAll("Work", "Personal", "Health", "Finance", "Shopping", "Learning");
-        if (isEdit) category.setValue(taskToEdit.getCategory());
-        else category.setPromptText("Category");
+        ComboBox<com.coach.model.TaskCategory> category = new ComboBox<>();
+        category.getItems().addAll(com.coach.model.TaskCategory.values());
+        if (isEdit && taskToEdit.getCategory() != null) {
+            category.setValue(com.coach.model.TaskCategory.fromString(taskToEdit.getCategory()));
+        } else {
+            category.setValue(com.coach.model.TaskCategory.OTHER);
+        }
 
         ComboBox<String> priority = new ComboBox<>();
         priority.getItems().addAll("High", "Medium", "Low");
@@ -146,6 +218,9 @@ public class TasksView {
 
         DatePicker deadline = new DatePicker(isEdit ? taskToEdit.getDeadline() : null);
 
+        TextField estTime = new TextField(isEdit ? String.valueOf(taskToEdit.getEstimatedTimeMinutes()) : "30");
+        estTime.setPromptText("Est. Minutes");
+
         grid.add(new Label("Title:"), 0, 0);
         grid.add(title, 1, 0);
         grid.add(new Label("Category:"), 0, 1);
@@ -154,6 +229,8 @@ public class TasksView {
         grid.add(priority, 1, 2);
         grid.add(new Label("Deadline:"), 0, 3);
         grid.add(deadline, 1, 3);
+        grid.add(new Label("Est. Time (min):"), 0, 4);
+        grid.add(estTime, 1, 4);
 
         dialog.getDialogPane().setContent(grid);
 
@@ -161,11 +238,17 @@ public class TasksView {
             if (dialogButton == saveButtonType) {
                 Task t = isEdit ? taskToEdit : new Task();
                 t.setTitle(title.getText());
-                t.setCategory(category.getValue());
+                t.setCategory(category.getValue().getDisplayName());
                 t.setPriority(priority.getSelectionModel().getSelectedIndex() + 1);
                 t.setDeadline(deadline.getValue());
+                try {
+                    t.setEstimatedTimeMinutes(Integer.parseInt(estTime.getText()));
+                } catch (NumberFormatException e) {
+                    t.setEstimatedTimeMinutes(0);
+                }
                 if (!isEdit) {
                     t.setStatus("TODO");
+                    t.setTimeSpentMinutes(0);
                 }
                 return t;
             }

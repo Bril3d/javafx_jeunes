@@ -10,7 +10,7 @@ import java.util.List;
 public class TaskRepository {
 
     public Task save(Task task) {
-        String sql = "INSERT INTO tasks (user_id, title, description, category, priority, deadline, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO tasks (user_id, title, description, category, priority, deadline, status, time_spent_minutes, estimated_time_minutes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
@@ -31,7 +31,7 @@ public class TaskRepository {
     }
 
     public boolean update(Task task) {
-        String sql = "UPDATE tasks SET title=?, description=?, category=?, priority=?, deadline=?, status=? WHERE id=? AND user_id=?";
+        String sql = "UPDATE tasks SET title=?, description=?, category=?, priority=?, deadline=?, status=?, time_spent_minutes=?, estimated_time_minutes=? WHERE id=? AND user_id=?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
@@ -45,8 +45,10 @@ public class TaskRepository {
                 pstmt.setNull(5, Types.DATE);
             }
             pstmt.setString(6, task.getStatus());
-            pstmt.setInt(7, task.getId());
-            pstmt.setInt(8, task.getUserId());
+            pstmt.setInt(7, task.getTimeSpentMinutes());
+            pstmt.setInt(8, task.getEstimatedTimeMinutes());
+            pstmt.setInt(9, task.getId());
+            pstmt.setInt(10, task.getUserId());
             
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -98,6 +100,8 @@ public class TaskRepository {
             pstmt.setNull(6, Types.DATE);
         }
         pstmt.setString(7, task.getStatus());
+        pstmt.setInt(8, task.getTimeSpentMinutes());
+        pstmt.setInt(9, task.getEstimatedTimeMinutes());
     }
 
     private Task extractTask(ResultSet rs) throws SQLException {
@@ -113,6 +117,8 @@ public class TaskRepository {
             task.setDeadline(deadline.toLocalDate());
         }
         task.setStatus(rs.getString("status"));
+        task.setTimeSpentMinutes(rs.getInt("time_spent_minutes"));
+        task.setEstimatedTimeMinutes(rs.getInt("estimated_time_minutes"));
         Timestamp createdAt = rs.getTimestamp("created_at");
         if (createdAt != null) {
             task.setCreatedAt(createdAt.toLocalDateTime());

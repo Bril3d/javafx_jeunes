@@ -3,7 +3,6 @@ package com.coach.ui.view;
 import atlantafx.base.theme.Styles;
 import com.coach.service.UserService;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -66,6 +65,16 @@ public class ViewManager {
         tasksBtn.setMaxWidth(Double.MAX_VALUE);
         tasksBtn.setOnAction(e -> navigateToTasks());
 
+        Button calBtn = new Button("📅 Calendar");
+        calBtn.getStyleClass().addAll(Styles.BUTTON_OUTLINED, Styles.ACCENT);
+        calBtn.setMaxWidth(Double.MAX_VALUE);
+        calBtn.setOnAction(e -> navigateToCalendar());
+
+        Button profileBtn = new Button("👤 My Profile");
+        profileBtn.getStyleClass().addAll(Styles.BUTTON_OUTLINED, Styles.ACCENT);
+        profileBtn.setMaxWidth(Double.MAX_VALUE);
+        profileBtn.setOnAction(e -> navigateToProfile());
+
         Button aiBtn = new Button("🤖 AI Assistant");
         aiBtn.getStyleClass().addAll(Styles.BUTTON_OUTLINED, Styles.SUCCESS);
         aiBtn.setMaxWidth(Double.MAX_VALUE);
@@ -82,7 +91,7 @@ public class ViewManager {
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        sidebar.getChildren().addAll(logoLabel, new Region() /* spacer */, dashBtn, tasksBtn, aiBtn, spacer, logoutBtn);
+        sidebar.getChildren().addAll(logoLabel, new Region(), dashBtn, tasksBtn, calBtn, profileBtn, aiBtn, spacer, logoutBtn);
     }
 
     public void navigateToLanding() {
@@ -121,9 +130,19 @@ public class ViewManager {
         rootPane.setCenter(new TasksView(this).getView());
     }
 
+    public void navigateToCalendar() {
+        showSidebar();
+        rootPane.setCenter(new CalendarView(this).getView());
+    }
+
     public void navigateToAi() {
         showSidebar();
         rootPane.setCenter(new AiCoachView(this).getView());
+    }
+
+    public void navigateToProfile() {
+        showSidebar();
+        rootPane.setCenter(new ProfileView(this).getView());
     }
 
     private void showSidebar() {
